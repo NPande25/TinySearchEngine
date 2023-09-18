@@ -1,0 +1,5 @@
+.nfs*
+vgcore*
+querier
+querier.o
+*.index

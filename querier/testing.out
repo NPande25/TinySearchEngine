@@ -1,0 +1,205 @@
+ml () {  module ml "$@"
+}
+module () {  _module_raw "$@" 2>&1
+}
+_module_raw () {  eval `/usr/bin/tclsh8.6 /usr/lib/x86_64-linux-gnu/modulecmd.tcl bash "$@"`;
+ _mlstatus=$?;
+ return $_mlstatus
+}
+#!/bin/bash
+#
+# Nikhil Pande
+# COSC 50, 23S
+# Tiny Search Engine
+#
+# testing.sh - bash testing script for querier
+
+make querier
+make: 'querier' is up to date.
+rm -rf invalidQuery
+rm -rf test1
+
+PAGEDIR=../../shared/tse/output
+VALGRIND="valgrind --leak-check=full --show-leak-kinds=all" 
+
+# bad command line inputs
+
+./querier
+Invalid number of arguments
+
+./querier oneargument
+Invalid number of arguments
+
+./querier onearg twoarg threearg four
+Invalid number of arguments
+
+./querier invalid_pagedir index/letters-3.index
+Not a valid pageDirectory
+
+./querier ../indexer index/letters-0.index # indexer is obviously not a crawler-produced directory
+Not a valid pageDirectory
+
+./querier $PAGEDIR/letters-3 index_fake/invalid_filename
+Not a valid indexFileName
+
+./querier $PAGEDIR/letters-3 index
+Not a valid indexFileName
+
+
+
+# bad query inputs
+
+touch invalidQuery
+
+echo "invalid!!" >> invalidQuery
+
+echo "and invalid" >> invalidQuery
+
+echo "invalid and" >> invalidQuery
+
+echo "or invalid and" >> invalidQuery
+
+echo "this seems ok and or not ok" >> invalidQuery
+
+echo "and and and and and" >> invalidQuery
+
+$VALGRIND ./querier $PAGEDIR/toscrape-2 $PAGEDIR/toscrape-2.index < invalidQuery
+==3144121== Memcheck, a memory error detector
+==3144121== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==3144121== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==3144121== Command: ./querier ../../shared/tse/output/toscrape-2 ../../shared/tse/output/toscrape-2.index
+==3144121== 
+Invalid character in query
+Error: there cannot be trailing or leading logical operators in the query.
+Error: there cannot be trailing or leading logical operators in the query.
+Error: there cannot be trailing or leading logical operators in the query.
+Error: there cannot be consecutive logical operators in the query.
+Error: there cannot be trailing or leading logical operators in the query.
+Query: Query: invalid!!
+--------------------------------------------
+Query: Query: and invalid
+--------------------------------------------
+Query: Query: invalid and
+--------------------------------------------
+Query: Query: or invalid and
+--------------------------------------------
+Query: Query: this seems ok and or not ok
+--------------------------------------------
+Query: Query: and and and and and
+--------------------------------------------
+Query: 
+==3144121== 
+==3144121== HEAP SUMMARY:
+==3144121==     in use at exit: 0 bytes in 0 blocks
+==3144121==   total heap usage: 251,748 allocs, 251,748 frees, 4,045,534 bytes allocated
+==3144121== 
+==3144121== All heap blocks were freed -- no leaks are possible
+==3144121== 
+==3144121== For lists of detected and suppressed errors, rerun with: -s
+==3144121== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+rm -rf invalidQuery
+
+
+# real testing
+
+PAGEDIRECTORY=$PAGEDIR/toscrape-2
+INDEXFILE=$PAGEDIR/toscrape-2.index
+
+touch test1
+
+echo "soccer and match and family" >> test1
+
+echo "boston or MArathon and race" >> test1
+
+echo "ham and cheese" >> test1
+
+echo "ALGORITHM" >> test1
+
+echo "high and school" >> test1
+
+echo "ketchup OR mustard   or relish" >> test1
+
+echo "HaRvArD" >> test1
+
+echo "priceless object or tattoo and cooking" >> test1
+
+$VALGRIND ./querier $PAGEDIRECTORY $INDEXFILE < test1
+==3144173== Memcheck, a memory error detector
+==3144173== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==3144173== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==3144173== Command: ./querier ../../shared/tse/output/toscrape-2 ../../shared/tse/output/toscrape-2.index
+==3144173== 
+Query: Query: soccer and match and family
+Matches 1 document(s) (ranked):
+Score:    1 Doc:  226 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/booked_365/index.html
+--------------------------------------------
+Query: Query: boston or marathon and race
+Matches 5 document(s) (ranked):
+Score:    4 Doc:  112 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/quench-your-own-thirst-business-lessons-learned-over-a-beer-or-two_629/index.html
+Score:    2 Doc:  155 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/brilliant-beacons-a-history-of-the-american-lighthouse_515/index.html
+Score:    2 Doc:  305 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-midnight-watch-a-novel-of-the-titanic-and-the-californian_640/index.html
+Score:    2 Doc:  322 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-art-forger_930/index.html
+Score:    1 Doc:  552 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/forever-and-forever-the-courtship-of-henry-longfellow-and-fanny-appleton_894/index.html
+--------------------------------------------
+Query: Query: ham and cheese
+No matches found
+--------------------------------------------
+Query: Query: algorithm
+No matches found
+--------------------------------------------
+Query: Query: high and school
+Matches 21 document(s) (ranked):
+Score:    1 Doc:   23 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/how-music-works_979/index.html
+Score:    2 Doc:   31 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html
+Score:    2 Doc:   48 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/dark-notes_800/index.html
+Score:    1 Doc:   97 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-guilty-will-robie-4_750/index.html
+Score:    1 Doc:  114 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/shoe-dog-a-memoir-by-the-creator-of-nike_831/index.html
+Score:    1 Doc:  135 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/its-all-easy-healthy-delicious-weeknight-meals-in-under-30-minutes_706/index.html
+Score:    1 Doc:  148 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/americas-war-for-the-greater-middle-east-a-military-history_361/index.html
+Score:    2 Doc:  174 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/can-you-keep-a-secret-fear-street-relaunch-4_614/index.html
+Score:    1 Doc:  202 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/approval-junkie-adventures-in-caring-too-much_363/index.html
+Score:    2 Doc:  259 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/catching-jordan-hundred-oaks_673/index.html
+Score:    2 Doc:  262 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-darkest-lie_747/index.html
+Score:    2 Doc:  263 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/this-is-where-it-ends_771/index.html
+Score:    1 Doc:  269 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/scarlett-epstein-hates-it-here_828/index.html
+Score:    1 Doc:  324 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-torch-is-passed-a-harding-family-story_945/index.html
+Score:    3 Doc:  329 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/friday-night-lights-a-town-a-team-and-a-dream_158/index.html
+Score:    2 Doc:  334 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/three-wishes-river-of-time-california-1_89/index.html
+Score:    1 Doc:  364 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/old-records-never-die-one-mans-quest-for-his-vinyl-and-his-past_39/index.html
+Score:    1 Doc:  384 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/reskilling-america-learning-to-labor-in-the-twenty-first-century_922/index.html
+Score:    1 Doc:  436 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-vacationers_863/index.html
+Score:    2 Doc:  458 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/will-you-wont-you-want-me_644/index.html
+Score:    1 Doc:  515 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/danganronpa-volume-1_889/index.html
+--------------------------------------------
+Query: Query: ketchup or mustard or relish
+Matches 2 document(s) (ranked):
+Score:    2 Doc:  449 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-nanny-diaries-nanny-1_265/index.html
+Score:    1 Doc:  144 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-pioneer-woman-cooks-dinnertime-comfort-classics-freezer-food-16-minute-meals-and-other-delicious-ways-to-solve-supper_943/index.html
+--------------------------------------------
+Query: Query: harvard
+Matches 3 document(s) (ranked):
+Score:    1 Doc:  111 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/the-art-of-startup-fundraising_606/index.html
+Score:    1 Doc:  148 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/americas-war-for-the-greater-middle-east-a-military-history_361/index.html
+Score:    1 Doc:  552 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/forever-and-forever-the-courtship-of-henry-longfellow-and-fanny-appleton_894/index.html
+--------------------------------------------
+Query: Query: priceless object or tattoo and cooking
+Matches 2 document(s) (ranked):
+Score:    1 Doc:  142 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/mama-tried-traditional-italian-cooking-for-the-screwed-crude-vegan-and-tattooed_908/index.html
+Score:    2 Doc:  334 http://cs50tse.cs.dartmouth.edu/tse/toscrape/catalogue/three-wishes-river-of-time-california-1_89/index.html
+--------------------------------------------
+Query: 
+==3144173== 
+==3144173== HEAP SUMMARY:
+==3144173==     in use at exit: 0 bytes in 0 blocks
+==3144173==   total heap usage: 950,714 allocs, 950,714 frees, 7,339,190,784 bytes allocated
+==3144173== 
+==3144173== All heap blocks were freed -- no leaks are possible
+==3144173== 
+==3144173== For lists of detected and suppressed errors, rerun with: -s
+==3144173== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+rm -rf test1
+
+
+

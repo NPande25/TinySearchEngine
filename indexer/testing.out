@@ -1,0 +1,126 @@
+ml () {  module ml "$@"
+}
+module () {  _module_raw "$@" 2>&1
+}
+_module_raw () {  eval `/usr/bin/tclsh8.6 /usr/lib/x86_64-linux-gnu/modulecmd.tcl bash "$@"`;
+ _mlstatus=$?;
+ return $_mlstatus
+}
+#!/bin/sh
+# Nikhil Pande
+# COSC 50, 23S
+# Tiny Search Engine
+#
+# testing.sh - testing file for indexer
+#
+
+make indexer
+make[1]: Entering directory '/thayerfs/home/f005dc7/cs50-dev/tse/indexer'
+make[1]: 'indexer' is up to date.
+make[1]: Leaving directory '/thayerfs/home/f005dc7/cs50-dev/tse/indexer'
+
+rm -rf index
+mkdir index
+
+PAGEDIR=../../shared/tse/crawldata
+
+
+
+# test cases
+
+./indexer
+Invalid number of arguments
+
+./indexer oneargument
+Invalid number of arguments
+
+./indexer onearg twoarg threearg four
+Invalid number of arguments
+
+./indexer invalid_pagedir index/letters-3.index
+Not a valid pageDirectory
+
+./indexer index index/letters-3.index # index is not a crawler directory
+Not a valid pageDirectory
+
+./indexer $PAGEDIR/letters-3 index_fake/invalid_filename
+Not a valid indexFileName
+
+./indexer $PAGEDIR/letters-3 index
+Not a valid indexFileName
+
+# create a read only file
+touch read_only
+chmod ugo=rx read_only
+./indexer $PAGEDIR/letters-3 read_only
+Not a valid indexFileName
+rm -f read_only
+
+# usages
+
+# wikipedia_2
+./indexer $PAGEDIR/wikipedia_2 index/wikipedia-2.index
+# use shared indexcmp function to check if there are any differences with shared index
+../../shared/tse/indexcmp ../../shared/tse/indices/wikipedia_2.ndx index/wikipedia-2.index
+# use indextest to validate directory
+./indextest index/wikipedia-2.index index/wikipedia-2-test.index
+# use indexcmp to ensure equivalence
+../../shared/tse/indexcmp index/wikipedia-2.index index/wikipedia-2-test.index
+
+
+# toscrape-1
+./indexer $PAGEDIR/toscrape-1 index/toscrape-1.index
+# indexcmp
+../../shared/tse/indexcmp ../../shared/tse/indices/toscrape-1.ndx index/toscrape-1.index
+# indextest
+./indextest index/toscrape-1.index index/toscrape-1-test.index
+# indexcmp
+../../shared/tse/indexcmp index/toscrape-1.index index/toscrape-1-test.index
+
+
+# indexer valgrind
+valgrind --leak-check=full --show-leak-kinds=all ./indexer $PAGEDIR/letters-3 index/letters-3.index
+==710091== Memcheck, a memory error detector
+==710091== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==710091== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==710091== Command: ./indexer ../../shared/tse/crawldata/letters-3 index/letters-3.index
+==710091== 
+==710091== 
+==710091== HEAP SUMMARY:
+==710091==     in use at exit: 0 bytes in 0 blocks
+==710091==   total heap usage: 1,288 allocs, 1,288 frees, 142,393 bytes allocated
+==710091== 
+==710091== All heap blocks were freed -- no leaks are possible
+==710091== 
+==710091== For lists of detected and suppressed errors, rerun with: -s
+==710091== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+# indextest
+valgrind --leak-check=full --show-leak-kinds=all ./indextest index/letters-3.index index/letters-3-test.index
+==710097== Memcheck, a memory error detector
+==710097== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==710097== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==710097== Command: ./indextest index/letters-3.index index/letters-3-test.index
+==710097== 
+==710097== 
+==710097== HEAP SUMMARY:
+==710097==     in use at exit: 472 bytes in 1 blocks
+==710097==   total heap usage: 123 allocs, 122 frees, 20,824 bytes allocated
+==710097== 
+==710097== 472 bytes in 1 blocks are still reachable in loss record 1 of 1
+==710097==    at 0x4848899: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==710097==    by 0x490B6CD: __fopen_internal (iofopen.c:65)
+==710097==    by 0x490B6CD: fopen@@GLIBC_2.2.5 (iofopen.c:86)
+==710097==    by 0x10990A: index_loadIndex (index.c:143)
+==710097==    by 0x1093AC: main (indextest.c:32)
+==710097== 
+==710097== LEAK SUMMARY:
+==710097==    definitely lost: 0 bytes in 0 blocks
+==710097==    indirectly lost: 0 bytes in 0 blocks
+==710097==      possibly lost: 0 bytes in 0 blocks
+==710097==    still reachable: 472 bytes in 1 blocks
+==710097==         suppressed: 0 bytes in 0 blocks
+==710097== 
+==710097== For lists of detected and suppressed errors, rerun with: -s
+==710097== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
