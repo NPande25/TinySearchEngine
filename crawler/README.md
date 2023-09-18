@@ -1,5 +1,5 @@
 # CS50 TSE Crawler
-## Nikhil Pande: Lab 4
+## Nikhil Pande
 
 The `crawler` subsystem of the tiny search engine utilizes takes a root URL, its starting point, and recursively crawls that page and all linked pages up to a certain depth, documenting the pages in a directory. It is implemented primarily in the `crawler.c` file, in which it uses a `bag` to track all the pages it finds and must scan, as well as a `hashtable` to track those that it has already visited.
 

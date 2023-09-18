@@ -1,12 +1,6 @@
 # CS50 TSE Indexer
 ## Nikhil Pande
 
-```
-****************
-* EXTENSION USED
-****************
-```
-
 The `indexer` subsystem of the Tiny Search Engine takes a directory of files, produced by a crawler, and stores every word in an index. It utilizes a new `index` data structure, which is mostly a wrapper for `hashtable` to do this.
 
 Much of the usage and testing information is covered in IMPLEMENTATION.md
