@@ -9,3 +9,4 @@ This repository contains my Tiny Search Engine, a project implemented in C that 
 
 All specific functionality and limitations of this design are well-documented in `README`, `IMPLEMENTATION`, and `DESIGN` markdown files.
 
+To compile, run `make`. To clean the subdirectories and the object files, run `make clean`.
