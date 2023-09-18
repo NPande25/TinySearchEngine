@@ -1,14 +1,11 @@
 # CS50 TSE
 ## Nikhil Pande (NPande25)
-```
-****************
-* EXTENSION USED
-****************
-```
+### May 2023
 
-The assignment and Specs are in a [public repo](https://github.com/CS50Spring2023/labs/tse).
-Do not clone that repo; view it on GitHub.
-Watch there for any commits that may represent updates to the assignment or specs.
+This repository contains my Tiny Search Engine, a project implemented in C that contains three unique subsystems:
+* `crawler`, which takes a root URL and recursively crawls through the linked webpages
+* `indexer`, which takes a crawler-produced directory and indexes every word
+* `querier`, which, using the directories and indexes, takes an inputted query and returns the most relevant webpages, ranked according to relevance.
 
-Add here any assumptions you made while writing the crawler, any ways in which your implementation differs from the three Specs, or any ways in which you know your implementation fails to work.
+All specific functionality and limitations of this design are well-documented in `README`, `IMPLEMENTATION`, and `DESIGN` markdown files.
 
